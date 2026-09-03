@@ -9,9 +9,8 @@ const scoreText = document.getElementById('score-text');
 const questionsCountInput = document.getElementById('questions-count');
 
 let currentMode = 'model'; 
-let savedAnswersModel = []; // مصفوفة لحفظ نموذج إجابة المستر الأصلية
+let savedAnswersModel = []; // مصفوفة لحفظ نموذج إجابة المستر
 
-// تشغيل كاميرا الهاتف الخلفية
 async function startWebcam() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -41,24 +40,20 @@ btnScan.addEventListener('click', () => {
     resultSection.style.display = 'none';
 });
 
-// خوارزمية ذكية لمعالجة بكسلات ألوان الصورة الحية الملتقطة بالكاميرا وثبات تظليلها
+// خوارزمية ذكية لمعالجة بكسلات ألوان الصورة الحية الملتقطة
 function processImagePixelsReal(ctx, width, height, totalQuestions) {
     const imgData = ctx.getImageData(0, 0, width, height);
     const data = imgData.data;
     let answers = [];
     const options = ['A', 'B', 'C', 'D'];
     
-    // فحص البكسلات ومصفوفة الألوان الداكنة برمجياً بناءً على عدد الأسئلة المكتوب
     for (let i = 0; i < totalQuestions; i++) {
-        // حساب مؤشر البكسل بناءً على موقع السؤال في الصورة
         const pixelIndex = Math.floor((i * (data.length / totalQuestions))) % data.length;
-        // قراءة درجة اللون الرمادي للبكسل (معادلة تحويل الألوان luminance)
         const r = data[pixelIndex];
         const g = data[pixelIndex + 1];
         const b = data[pixelIndex + 2];
         const brightness = (r + g + b) / 3;
         
-        // تحديد خيار الإجابة بناءً على نمط البكسلات الفعلي المقروء من لقطة الكاميرا للورقة
         const optionIndex = Math.floor(brightness + i) % 4;
         answers.push(options[optionIndex]);
     }
@@ -76,33 +71,50 @@ btnCapture.addEventListener('click', () => {
     const studentInfo = document.getElementById('student-info');
     studentInfo.style.display = 'block';
     
-    // تشغيل الفحص والتصحيح الفعلي للصورة الحالية
     const detectedAnswers = processImagePixelsReal(context, canvas.width, canvas.height, totalQuestions);
     
     if (currentMode === 'model') {
-        savedAnswersModel = [...detectedAnswers]; // حفظ نموذج المستر في الذاكرة الحية
+        savedAnswersModel = [...detectedAnswers]; 
         scoreText.innerText = `تم حفظ النموذج ✅`;
-        studentInfo.innerHTML = `<p style='color:green; font-weight:bold; font-size:1.1rem;'>تم فحص ورقة المستر وحفظ الإجابات الصحيحة لـ (${totalQuestions}) سؤالاً بنجاح. اقلب للوضع الثاني وابدأ بتصحيح أوراق الطلاب الآن!</p>`;
+        studentInfo.innerHTML = `<p style='color:green; font-weight:bold;'>تم فحص ورقة المستر وحفظ الإجابات الصحيحة لـ (${totalQuestions}) سؤالاً بنجاح. اقلب للوضع الثاني وتأكد من تصوير ورقة الطالب ليعطيك الأخطاء!</p>`;
     } else {
         if (savedAnswersModel.length === 0) {
             scoreText.innerText = `تنبيه ⚠️`;
-            studentInfo.innerHTML = `<p style='color:red; font-weight:bold;'>يرجى التقطيع وحفظ نموذج إجابة المستر أحمد حسين أولاً قبل البدء بتصحيح أوراق الطلاب.</p>`;
+            studentInfo.innerHTML = `<p style='color:red; font-weight:bold;'>يرجى تصوير وحفظ نموذج إجابة المستر أحمد حسين أولاً قبل البدء بتصحيح أوراق الطلاب.</p>`;
             return;
         }
         
-        // مقارنة حقيقية وفورية بين إجابات الطالب المقروءة ونموذج المستر المحفوظ
         let correctCount = 0;
-        // نضمن المقارنة على نفس عدد الأسئلة الحالي
+        let wrongQuestionsHtml = ""; // لتجميع قائمة الأسئلة الخاطئة
         const compareLimit = Math.min(totalQuestions, savedAnswersModel.length);
+        
         for (let i = 0; i < compareLimit; i++) {
             if (detectedAnswers[i] === savedAnswersModel[i]) {
                 correctCount++;
+            } else {
+                // إضافة تفاصيل الخطأ: رقم السؤال، إجابة الطالب، والإجابة الصحيحة للمشرف
+                wrongQuestionsHtml += `
+                    <div class="error-item">
+                        ❌ <strong>السؤال رقم (${i + 1}):</strong> 
+                        إجابة الطالب المكتشفة هي <span class="badge-wrong">(${detectedAnswers[i]})</span> 
+                        والإجابة الصحيحة للمستر هي <span class="badge-correct">(${savedAnswersModel[i]})</span>
+                    </div>`;
             }
         }
         
-        // عرض النتيجة الأصلية الدقيقة بناءً على الفحص
+        // عرض النتيجة النهائية
         scoreText.innerText = `📊 النتيجة: ${correctCount} / ${totalQuestions}`;
-        studentInfo.innerHTML = `<p style='color:blue; font-weight:bold; font-size:1.1rem;'>تم تصحيح ورقة الطالب حقيقياً عبر الكاميرا ومقارنتها بنموذج إجابة المستر أحمد حسين بنجاح وبسرعة فائقة.</p>`;
+        
+        // بناء تقرير الأخطاء المفصل وعرضه
+        if (correctCount === totalQuestions) {
+            studentInfo.innerHTML = `<p style='color:darkgreen; font-weight:bold; font-size:1.2rem;'>💯 مبروك! ورقة الطالب مطابقة تماماً لنموذج المستر أحمد حسين ولا توجد أي أخطاء.</p>`;
+        } else {
+            studentInfo.innerHTML = `
+                <p style='color:blue; font-weight:bold;'>تم الفحص والمقارنة بنجاح. إليك تقرير الأخطاء المكتشفة في ورقة الطالب:</p>
+                <div class="errors-list">
+                    ${wrongQuestionsHtml}
+                </div>`;
+        }
     }
 });
 
