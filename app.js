@@ -6,11 +6,10 @@ const btnModel = document.getElementById('btn-model');
 const btnScan = document.getElementById('btn-scan');
 const resultSection = document.getElementById('result-section');
 const scoreText = document.getElementById('score-text');
-const questionsCountSelect = document.getElementById('questions-count');
+const questionsCountInput = document.getElementById('questions-count');
 
 let currentMode = 'model'; 
 
-// تشغيل كاميرا الهاتف الخلفية
 async function startWebcam() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -40,17 +39,13 @@ btnScan.addEventListener('click', () => {
     resultSection.style.display = 'none';
 });
 
-// عند الضغط على زر التقط وفحص
 btnCapture.addEventListener('click', () => {
     const context = canvas.getContext('2d');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    
-    // التقاط الصورة
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
     
-    // معرفة عدد الأسئلة المختار حالياً
-    const totalQuestions = parseInt(questionsCountSelect.value);
+    const totalQuestions = parseInt(questionsCountInput.value) || 20;
     
     resultSection.style.display = 'block';
     const studentInfo = document.getElementById('student-info');
@@ -58,12 +53,11 @@ btnCapture.addEventListener('click', () => {
     
     if(currentMode === 'model') {
         scoreText.innerText = `تم حفظ النموذج ✅`;
-        studentInfo.innerHTML = `<p style='color:green;'>تم قراءة وحفظ نموذج الإجابة لـ (${totalQuestions}) سؤالاً بنجاح للمستر أحمد حسين.</p>`;
+        studentInfo.innerHTML = `<p style='color:green;'>تم قراءة نموذج الإجابة لـ (${totalQuestions}) سؤالاً بنجاح للمستر أحمد حسين.</p>`;
     } else {
-        // محاكاة نتيجة ديناميكية بناءً على عدد الأسئلة المختار
-        const randomCorrect = Math.floor(Math.random() * (totalQuestions / 4)) + Math.floor(totalQuestions * 0.75); 
-        scoreText.innerText = `📊 النتيجة: ${randomCorrect} / ${totalQuestions}`;
-        studentInfo.innerHTML = `<p style='color:blue;'>تم الفحص التجريبي لورقة الطالب بناءً على إجمالي ${totalQuestions} سؤالاً.</p>`;
+        // رسالة مؤقتة تشرح للمستخدم الخطوة القادمة
+        scoreText.innerText = `جاري المعالجة...`;
+        studentInfo.innerHTML = `<p style='color:orange;'>الواجهة جاهزة. الآن سنقوم بكتابة كود البايثون (Backend) وربطه هنا لتظهر النتيجة الأصلية بناءً على ورقة الطالب المُلتقطة فعلياً.</p>`;
     }
 });
 
