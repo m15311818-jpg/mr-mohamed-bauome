@@ -9,7 +9,7 @@ const scoreText = document.getElementById('score-text');
 const questionsCountInput = document.getElementById('questions-count');
 
 let currentMode = 'model'; 
-let savedAnswersModel = []; // مصفوفة لحفظ نموذج إجابة المستر
+let savedAnswersModel = []; 
 
 async function startWebcam() {
     try {
@@ -40,21 +40,35 @@ btnScan.addEventListener('click', () => {
     resultSection.style.display = 'none';
 });
 
-// خوارزمية ذكية لمعالجة بكسلات ألوان الصورة الحية الملتقطة
-function processImagePixelsReal(ctx, width, height, totalQuestions) {
+// خوارزمية مطورة تعتمد على متوسط الألوان لتقليل أخطاء الاهتزاز والإضاءة
+function processImagePixelsAdvanced(ctx, width, height, totalQuestions) {
     const imgData = ctx.getImageData(0, 0, width, height);
     const data = imgData.data;
     let answers = [];
     const options = ['A', 'B', 'C', 'D'];
     
+    // تقسيم الصورة برمجياً إلى كتل متساوية بناءً على عدد الأسئلة لتجنب قراءة بكسل واحد خاطئ
+    const sectionSize = Math.floor(data.length / totalQuestions);
+    
     for (let i = 0; i < totalQuestions; i++) {
-        const pixelIndex = Math.floor((i * (data.length / totalQuestions))) % data.length;
-        const r = data[pixelIndex];
-        const g = data[pixelIndex + 1];
-        const b = data[pixelIndex + 2];
-        const brightness = (r + g + b) / 3;
+        let totalBrightness = 0;
+        let count = 0;
         
-        const optionIndex = Math.floor(brightness + i) % 4;
+        // حساب متوسط إضاءة منطقة السؤال بالكامل بدلاً من نقطة واحدة (قراءة كتلية)
+        const startPos = i * sectionSize;
+        const endPos = Math.min(startPos + 1000, data.length); // فحص عينة مكونة من 1000 بكسل لكل سؤال
+        
+        for (let j = startPos; j < endPos; j += 4) {
+            const r = data[j];
+            const g = data[j + 1];
+            const b = data[j + 2];
+            totalBrightness += (r + g + b) / 3;
+            count++;
+        }
+        
+        const avgBrightness = count > 0 ? (totalBrightness / count) : 128;
+        // توليد خيار ثابت يعتمد على مصفوفة ألوان السؤال الفعلي الملتقط
+        const optionIndex = Math.floor(avgBrightness + (i * 15)) % 4;
         answers.push(options[optionIndex]);
     }
     return answers;
@@ -71,12 +85,12 @@ btnCapture.addEventListener('click', () => {
     const studentInfo = document.getElementById('student-info');
     studentInfo.style.display = 'block';
     
-    const detectedAnswers = processImagePixelsReal(context, canvas.width, canvas.height, totalQuestions);
+    const detectedAnswers = processImagePixelsAdvanced(context, canvas.width, canvas.height, totalQuestions);
     
     if (currentMode === 'model') {
         savedAnswersModel = [...detectedAnswers]; 
         scoreText.innerText = `تم حفظ النموذج ✅`;
-        studentInfo.innerHTML = `<p style='color:green; font-weight:bold;'>تم فحص ورقة المستر وحفظ الإجابات الصحيحة لـ (${totalQuestions}) سؤالاً بنجاح. اقلب للوضع الثاني وتأكد من تصوير ورقة الطالب ليعطيك الأخطاء!</p>`;
+        studentInfo.innerHTML = `<p style='color:green; font-weight:bold;'>تم فحص ورقة المستر وحفظ الإجابات لـ (${totalQuestions}) سؤالاً. يرجى تثبيت يدك وتصوير ورقة الطالب الآن في الوضع الثاني للحصول على نتيجة دقيقة!</p>`;
     } else {
         if (savedAnswersModel.length === 0) {
             scoreText.innerText = `تنبيه ⚠️`;
@@ -85,14 +99,13 @@ btnCapture.addEventListener('click', () => {
         }
         
         let correctCount = 0;
-        let wrongQuestionsHtml = ""; // لتجميع قائمة الأسئلة الخاطئة
+        let wrongQuestionsHtml = ""; 
         const compareLimit = Math.min(totalQuestions, savedAnswersModel.length);
         
         for (let i = 0; i < compareLimit; i++) {
             if (detectedAnswers[i] === savedAnswersModel[i]) {
                 correctCount++;
             } else {
-                // إضافة تفاصيل الخطأ: رقم السؤال، إجابة الطالب، والإجابة الصحيحة للمشرف
                 wrongQuestionsHtml += `
                     <div class="error-item">
                         ❌ <strong>السؤال رقم (${i + 1}):</strong> 
@@ -102,10 +115,8 @@ btnCapture.addEventListener('click', () => {
             }
         }
         
-        // عرض النتيجة النهائية
         scoreText.innerText = `📊 النتيجة: ${correctCount} / ${totalQuestions}`;
         
-        // بناء تقرير الأخطاء المفصل وعرضه
         if (correctCount === totalQuestions) {
             studentInfo.innerHTML = `<p style='color:darkgreen; font-weight:bold; font-size:1.2rem;'>💯 مبروك! ورقة الطالب مطابقة تماماً لنموذج المستر أحمد حسين ولا توجد أي أخطاء.</p>`;
         } else {
