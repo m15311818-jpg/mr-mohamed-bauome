@@ -42,20 +42,21 @@ section {
     text-align: center;
 }
 
-/* تنسيق خانة الأسئلة الجديدة */
+/* تنسيق خانة كتابة الأسئلة الجديدة */
 .questions-config {
     margin-bottom: 1.5rem;
     font-size: 1.1rem;
     font-weight: bold;
 }
 
-.questions-config select {
+.questions-config input {
     padding: 0.5rem 1rem;
     font-size: 1rem;
     border-radius: 6px;
     border: 2px solid var(--secondary-color);
     background-color: white;
-    cursor: pointer;
+    width: 80px;
+    text-align: center;
     margin-right: 0.5rem;
 }
 
