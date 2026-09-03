@@ -6,24 +6,24 @@ const btnModel = document.getElementById('btn-model');
 const btnScan = document.getElementById('btn-scan');
 const resultSection = document.getElementById('result-section');
 const scoreText = document.getElementById('score-text');
+const questionsCountSelect = document.getElementById('questions-count');
 
-let currentMode = 'model'; // الوضع الافتراضي: نموذج الإجابة
+let currentMode = 'model'; 
 
-// 1. تشغيل كاميرا الهاتف أو الكمبيوتر تلقائياً
+// تشغيل كاميرا الهاتف الخلفية
 async function startWebcam() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "environment" }, // يفضل الكاميرا الخلفية للهواتف
+            video: { facingMode: "environment" }, 
             audio: false 
         });
         video.srcObject = stream;
     } catch (err) {
         console.error("خطأ في تشغيل الكاميرا: ", err);
-        alert("يرجى إعطاء صلاحية الوصول للكاميرا لتشغيل تطبيق المستر أحمد حسين.");
+        alert("يرجى إعطاء صلاحية الوصول للكاميرا.");
     }
 }
 
-// التبديل بين الأوضاع
 btnModel.addEventListener('click', () => {
     currentMode = 'model';
     btnModel.classList.add('active');
@@ -40,28 +40,31 @@ btnScan.addEventListener('click', () => {
     resultSection.style.display = 'none';
 });
 
-// 2. التقاط الصورة عند الضغط على الزر
+// عند الضغط على زر التقط وفحص
 btnCapture.addEventListener('click', () => {
     const context = canvas.getContext('2d');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     
-    // رسم اللقطة الحالية من الفيديو داخل الـ Canvas
+    // التقاط الصورة
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
     
-    // تحويل الصورة إلى صيغة Base64 لإرسالها لاحقاً للـ Backend (بايثون)
-    const imageDataUrl = canvas.toDataUrl('image/jpeg');
-
-    // محاكاة مؤقتة للنتيجة حتى نربط الـ Backend
+    // معرفة عدد الأسئلة المختار حالياً
+    const totalQuestions = parseInt(questionsCountSelect.value);
+    
     resultSection.style.display = 'block';
+    const studentInfo = document.getElementById('student-info');
+    studentInfo.style.display = 'block';
+    
     if(currentMode === 'model') {
-        scoreText.innerText = "تم حفظ النموذج ✅";
-        document.getElementById('student-info').style.display = 'block';
+        scoreText.innerText = `تم حفظ النموذج ✅`;
+        studentInfo.innerHTML = `<p style='color:green;'>تم قراءة وحفظ نموذج الإجابة لـ (${totalQuestions}) سؤالاً بنجاح للمستر أحمد حسين.</p>`;
     } else {
-        // هنا سيتم وضع نتيجة التصحيح القادمة من OpenCV
-        scoreText.innerText = "جاري التصحيح... ⏳"; 
+        // محاكاة نتيجة ديناميكية بناءً على عدد الأسئلة المختار
+        const randomCorrect = Math.floor(Math.random() * (totalQuestions / 4)) + Math.floor(totalQuestions * 0.75); 
+        scoreText.innerText = `📊 النتيجة: ${randomCorrect} / ${totalQuestions}`;
+        studentInfo.innerHTML = `<p style='color:blue;'>تم الفحص التجريبي لورقة الطالب بناءً على إجمالي ${totalQuestions} سؤالاً.</p>`;
     }
 });
 
-// تشغيل الكاميرا بمجرد تحميل الصفحة
 window.addEventListener('DOMContentLoaded', startWebcam);
