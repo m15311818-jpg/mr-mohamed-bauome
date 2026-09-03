@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة المستر أحمد حسين لتصحيح الامتحانات</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>🎯 منصة المستر أحمد حسين</h1>
+        <p>النظام الذكي لتصحيح الامتحانات التلقائي عبر الكاميرا</p>
+    </header>
+
+    <main class="container">
+        <!-- قسم التحكم والوضع -->
+        <section class="setup-section">
+            <h2>🛠️ إعدادات الفحص</h2>
+            <div class="mode-buttons">
+                <button id="btn-model" class="active">1. إدخال نموذج الإجابة</button>
+                <button id="btn-scan">2. تصحيح أوراق الطلاب</button>
+            </div>
+            <p id="status-text" class="status">الوضع الحالي: إدخال نموذج الإجابة الأساسي</p>
+        </section>
+
+        <!-- قسم الكاميرا والمعاينة -->
+        <section class="camera-section">
+            <div class="video-container">
+                <video id="webcam" autoplay playsinline></video>
+                <canvas id="capture-canvas" style="display:none;"></canvas>
+            </div>
+            <div class="controls">
+                <button id="btn-capture" class="btn-primary">📸 التقط الصورة وفحص</button>
+            </div>
+        </section>
+
+        <!-- قسم عرض النتائج -->
+        <section id="result-section" class="result-section" style="display: none;">
+            <h3>📊 نتيجة الفحص المبدئية</h3>
+            <div class="score-badge">
+                <span id="score-text">0 / 0</span>
+            </div>
+            <div id="student-info" style="display: none;">
+                <p>تم استخراج الإجابات وحفظها في قاعدة البيانات بنجاح.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>جميع الحقوق محفوظة © منصة المستر أحمد حسين - 2026</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
