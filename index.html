@@ -14,9 +14,21 @@
     </header>
 
     <main class="container">
-        <!-- قسم التحكم والوضع -->
+        <!-- قسم التحكم والوضع وإعدادات الأسئلة -->
         <section class="setup-section">
-            <h2>🛠️ إعدادات الفحص</h2>
+            <h2>🛠️ إعدادات الفحص والامتحان</h2>
+            
+            <!-- خانة اختيار عدد الأسئلة الجديدة -->
+            <div class="questions-config">
+                <label for="questions-count">📝 عدد أسئلة الامتحان:</label>
+                <select id="questions-count">
+                    <option value="10">10 أسئلة</option>
+                    <option value="20" selected>20 سؤالاً</option>
+                    <option value="30">30 سؤالاً</option>
+                    <option value="50">50 سؤالاً</option>
+                </select>
+            </div>
+
             <div class="mode-buttons">
                 <button id="btn-model" class="active">1. إدخال نموذج الإجابة</button>
                 <button id="btn-scan">2. تصحيح أوراق الطلاب</button>
@@ -41,9 +53,7 @@
             <div class="score-badge">
                 <span id="score-text">0 / 0</span>
             </div>
-            <div id="student-info" style="display: none;">
-                <p>تم استخراج الإجابات وحفظها في قاعدة البيانات بنجاح.</p>
-            </div>
+            <div id="student-info" style="display: none;"></div>
         </section>
     </main>
 
